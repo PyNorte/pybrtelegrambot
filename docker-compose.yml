@@ -1,0 +1,6 @@
+bot:
+  build: .
+  command: /usr/local/bin/python /app/bot.py
+  restart: always
+  volumes:
+    - bot.py:/app/bot.py
