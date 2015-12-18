@@ -33,7 +33,7 @@ Please contribute: https://github.com/citec/pybrtelegrambot
 @bot.message_handler(commands=['where'])
 def send_where(message):
     chat_id = message.chat.id
-    bot.send_message(chat_id, u'A #pybr12 vai ter lugar em Florinópolis')
+    bot.send_message(chat_id, u'A #pybr12 vai ter lugar em Florianópolis')
 
 bot.polling()
 
