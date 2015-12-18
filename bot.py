@@ -4,8 +4,9 @@ import json
 import telebot
 import requests
 from datetime import datetime
+from decouple import config
 
-API_TOKEN = '142988456:AAGVT1vDwAcEmTCE-J5OUcS6hc-Nd5pHeCo'
+API_TOKEN = config('API_TOKEN')
 
 bot = telebot.TeleBot(API_TOKEN)
 
