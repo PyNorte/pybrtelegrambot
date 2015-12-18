@@ -4,3 +4,4 @@ bot:
   restart: always
   volumes:
     - bot.py:/app/bot.py
+    - ./settings.ini:/app/settings.ini
