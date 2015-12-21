@@ -26,10 +26,19 @@ def send_help(message):
     bot.send_message(chat_id, u"""\
 /start  Send welcome message
 /help   Show this help message
+/invite Displays invite link
 /where  Show location
 ... (TODO)
 Please contribute: https://github.com/citec/pybrtelegrambot
 """)
+
+@bot.message_handler(commands=['invite_link'])
+def send_invite_link(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, u"""\
+https://telegram.me/joinchat/AG9QCDwzQzvM4tx8Chp-nQ
+""")
+
 
 @bot.message_handler(commands=['where'])
 def send_where(message):
