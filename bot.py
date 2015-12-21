@@ -26,7 +26,7 @@ def send_help(message):
     bot.send_message(chat_id, u"""\
 /start  Send welcome message
 /help   Show this help message
-/invite Displays invite link
+/invite_link Displays invite link
 /where  Show location
 ... (TODO)
 Please contribute: https://github.com/citec/pybrtelegrambot
