@@ -1,7 +1,7 @@
 bot:
   build: .
   command: /usr/local/bin/python /app/bot.py
-  restart: always
+  restart: unless-stopped
   volumes:
     - bot.py:/app/bot.py
     - ./settings.ini:/app/settings.ini
