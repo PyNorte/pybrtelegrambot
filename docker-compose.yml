@@ -1,7 +1,7 @@
 bot:
   build: .
-  command: /usr/local/bin/python /bot/bot.py
+  command: /usr/local/bin/python bot.py
   restart: unless-stopped
   volumes:
-    - bot.py:/app/bot.py
+    - bot.py:/bot/bot.py
     - membros.db:/bot/membros.db
