@@ -9,7 +9,7 @@ from mensagens import *
 API_TOKEN = os.getenv('API_TOKEN')
 DB_NAME = os.getenv('BOT_DB', "membros.db")
 
-bot = telebot.TeleBot(API_TOKEN)
+bot = telebot.TeleBot(API_TOKEN, threaded=True)
 
 db.inicializa(DB_NAME)
 
@@ -87,6 +87,6 @@ def send_membro(message):
 _logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
 
-bot.polling()
+bot.polling(none_stop=True)
 
 
