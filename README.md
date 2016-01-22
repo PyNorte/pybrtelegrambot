@@ -1,9 +1,5 @@
-# Getting started:
-
-First you need to create a file called `settings.ini` to define your api token.
+# Como rodar:
 
 ```
-[settings]
-
-API_TOKEN = your-api-token
+export API_TOKEN = token
 ```
