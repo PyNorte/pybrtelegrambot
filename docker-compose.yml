@@ -4,4 +4,5 @@ bot:
   restart: unless-stopped
   volumes:
     - bot.py:/bot/bot.py
-    - membros.db:/bot/membros.db
+    - membros.db:/bot/pybrtelegrambot/membros.db
+  env_file: .env
