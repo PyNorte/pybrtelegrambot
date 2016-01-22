@@ -21,7 +21,7 @@ def cria_banco():
                      (id INTEGER PRIMARY KEY, sigla text, nome text)''')
             c.execute('''CREATE TABLE membros
                      (id INTEGER PRIMARY KEY, nome text, estado integer, telegram integer)''')
-            for sigla, estado in ESTADOS.iteritems():
+            for sigla, estado in ESTADOS.items():
                 c.execute("""insert into estados(sigla, nome) values(?,?)""", (sigla, estado))
             conn.commit()
 
