@@ -63,13 +63,13 @@ def send_lista(message):
     bot.send_message(chat_id, db.lista_users())
 
 
-@bot.message_handler(commands=['nomes'])
+@bot.message_handler(commands=['nomes', 'membros'])
 def send_nomes(message):
     chat_id = destino(message)
     bot.send_message(chat_id, db.lista_users_por_nome())
 
 
-@bot.message_handler(commands=['membro'])
+@bot.message_handler(commands=['membro', 'mecadastra', 'novo'])
 def send_membro(message):
     chat_id = destino(message)
     params = message.text.split()

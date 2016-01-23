@@ -10,9 +10,9 @@ AJUDA = """
 /ajuda   Mostra este resumo dos comandos
 /links   Mostra os link para participar das atividades do grupo
 /estados Lista os estados cobertos pelo grupo
-/membro  Adiciona usuário no grupo do estado
+/membro  Adiciona usuário no grupo do estado (/mecadastra)
 /lista   Lista membros por estado
-/nomes   Lista membros por nome
+/nomes   Lista membros por nome (/membros)
 """
 
 LINKS = """\
