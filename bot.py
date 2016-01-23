@@ -9,6 +9,8 @@ from mensagens import *
 API_TOKEN = os.getenv('API_TOKEN')
 DB_NAME = os.getenv('BOT_DB', "membros.db")
 
+assert API_TOKEN is not None
+
 bot = telebot.TeleBot(API_TOKEN, threaded=True)
 
 db.inicializa(DB_NAME)
@@ -17,7 +19,7 @@ db.lista()
 
 
 def destino(mensagem):
-    return mensagem.from_user.id
+    return mensagem.chat.id
 
 
 @bot.message_handler(content_types=['new_chat_participant'])
