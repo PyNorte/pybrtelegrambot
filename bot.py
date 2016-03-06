@@ -5,7 +5,6 @@ import logging
 import db
 from mensagens import *
 
-
 API_TOKEN = os.getenv('API_TOKEN')
 DB_NAME = os.getenv('BOT_DB', "membros.db")
 
@@ -67,6 +66,28 @@ def send_lista(message):
 def send_nomes(message):
     chat_id = destino(message)
     bot.send_message(chat_id, db.lista_users_por_nome())
+
+
+@bot.message_handler(commands=['estatistica', 'contador', 'total', 'stat'])
+def send_stats(message):
+    chat_id = destino(message)
+    stats = db.get_stats()
+    mensagem = STAT_CAB
+    for estado in stats[0]:
+        mensagem += STAT_ESTADO.format(estado)
+    mensagem += STAT_ROD.format(stats[1])
+    bot.send_message(chat_id, mensagem)
+
+
+@bot.message_handler(commands=['eventos'])
+def send_eventos(message):
+    chat_id = destino(message)
+    eventos = db.get_eventos()
+    mensagem = EVENTOS_CAB
+    for evento in eventos:
+        mensagem += EVENTOS_DESC.format(evento)
+    mensagem += EVENTOS_ROD
+    bot.send_message(chat_id, mensagem)
 
 
 @bot.message_handler(commands=['membro', 'mecadastra', 'novo'])

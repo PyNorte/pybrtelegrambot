@@ -23,6 +23,9 @@ def cria_banco():
                      (id INTEGER PRIMARY KEY, nome text, estado integer, telegram integer)''')
             for sigla, estado in ESTADOS.items():
                 c.execute("""insert into estados(sigla, nome) values(?,?)""", (sigla, estado))
+            c.execute("""CREATE TABLE eventos
+                         (id INTEGER PRIMARY KEY, data text, descricao text, link text,
+                          telegram integer)""")
             conn.commit()
 
 
@@ -47,6 +50,31 @@ def get_estado(estado):
                 return None
             else:
                 return estado[0]
+
+
+def get_stats():
+    with conecta() as conn:
+        with closing(conn.cursor()) as c:
+            c.execute(u"""select e.nome, count(*)
+                          from membros m, estados e
+                          where m.estado=e.id
+                          group by e.nome
+                          order by e.nome""")
+            por_estado = c.fetchall()
+            c.execute(u"""select count(*)
+                          from membros m""")
+            total = c.fetchone()[0]
+            return [por_estado, total]
+
+
+def get_eventos():
+    with conecta() as conn:
+        with closing(conn.cursor()) as c:
+            c.execute(u"""select * from eventos
+                          where data >= datetime('now')
+                          order by data""")
+            eventos = c.fetchall()
+            return eventos
 
 
 def update_user(from_user, estado):

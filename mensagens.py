@@ -13,6 +13,8 @@ AJUDA = """
 /membro  Adiciona usuário no grupo do estado (/mecadastra)
 /lista   Lista membros por estado
 /nomes   Lista membros por nome (/membros)
+/stat    Número de membros por estado e total
+/eventos Próximos eventos
 """
 
 LINKS = """\
@@ -62,3 +64,20 @@ Uso:
 Exemplo:
 /membro amazonas
 """
+
+STAT_CAB = """
+Estatísticas:
+
+Total por Estados:
+"""
+STAT_ESTADO = "{0[0]} - {0[1]}"
+
+STAT_ROD = "Total: {0} membros\n"
+
+EVENTOS_CAB = """
+Próximos Eventos:
+"""
+
+EVENTOS_DESC = "{0[1]} - {0[2]} {0[3]}"
+
+EVENTOS_ROD = ""
