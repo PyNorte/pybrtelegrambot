@@ -1,6 +1,8 @@
 import telebot
 import os
 import logging
+import pytz
+import datetime
 
 import db
 from mensagens import *
@@ -15,6 +17,10 @@ bot = telebot.TeleBot(API_TOKEN, threaded=True)
 db.inicializa(DB_NAME)
 
 db.lista()
+
+manaus = pytz.timezone("America/Manaus")
+belem = pytz.timezone("America/Belem")
+rio_branco = pytz.timezone("America/Rio_Branco")
 
 
 def destino(mensagem):
@@ -68,7 +74,7 @@ def send_nomes(message):
     bot.send_message(chat_id, db.lista_users_por_nome())
 
 
-@bot.message_handler(commands=['estatistica', 'contador', 'total', 'stat'])
+@bot.message_handler(commands=['estatistica', 'contador', 'total', 'stat', 'stats'])
 def send_stats(message):
     chat_id = destino(message)
     stats = db.get_stats()
@@ -85,7 +91,11 @@ def send_eventos(message):
     eventos = db.get_eventos()
     mensagem = EVENTOS_CAB
     for evento in eventos:
-        mensagem += EVENTOS_DESC.format(evento)
+        base = pytz.utc.localize(evento[1])
+        m = manaus.normalize(base)
+        b = belem.normalize(base)
+        r = rio_branco.normalize(base)
+        mensagem += EVENTOS_DESC.format(evento, r, m, b)
     mensagem += EVENTOS_ROD
     bot.send_message(chat_id, mensagem)
 

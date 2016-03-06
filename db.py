@@ -24,7 +24,7 @@ def cria_banco():
             for sigla, estado in ESTADOS.items():
                 c.execute("""insert into estados(sigla, nome) values(?,?)""", (sigla, estado))
             c.execute("""CREATE TABLE eventos
-                         (id INTEGER PRIMARY KEY, data text, descricao text, link text,
+                         (id INTEGER PRIMARY KEY, data timestamp, descricao text, link text,
                           telegram integer)""")
             conn.commit()
 
@@ -74,6 +74,7 @@ def get_eventos():
                           where data >= datetime('now')
                           order by data""")
             eventos = c.fetchall()
+            print(eventos)
             return eventos
 
 
@@ -117,7 +118,7 @@ def lista_users_por_nome():
 
 
 def conecta():
-    return sqlite3.connect(__DB_NAME)
+    return sqlite3.connect(__DB_NAME, detect_types=sqlite3.PARSE_DECLTYPES)
 
 
 def inicializa(nome="membros.db"):

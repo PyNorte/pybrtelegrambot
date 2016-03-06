@@ -70,14 +70,23 @@ Estatísticas:
 
 Total por Estados:
 """
-STAT_ESTADO = "{0[0]} - {0[1]}"
+STAT_ESTADO = "{0[0]} - {0[1]}\n"
 
-STAT_ROD = "Total: {0} membros\n"
+STAT_ROD = "\nTotal: {0} membros\n"
 
 EVENTOS_CAB = """
 Próximos Eventos:
 """
 
-EVENTOS_DESC = "{0[1]} - {0[2]} {0[3]}"
+EVENTOS_DESC = """
+Evento: {0[2]}
+Link: {0[3]}
+Data: {0[1]:%d/%m/%y}
+Horários:
+  Rio Branco: {1:%H:%Mh}
+  Manaus, Boa Vista, Porto Velho: {2:%H:%Mh}
+  Belém, Palmas, Macapá: {3:%H:%Mh}
+
+"""
 
 EVENTOS_ROD = ""
