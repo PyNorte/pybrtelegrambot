@@ -30,6 +30,9 @@ https://groups.google.com/d/forum/pynorte
 GitHub:
 https://github.com/PyNorte/
 
+Facebook:
+https://www.facebook.com/pynorte/
+
 """
 
 START = """\
