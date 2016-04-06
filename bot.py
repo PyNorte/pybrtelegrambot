@@ -2,7 +2,7 @@ import telebot
 import os
 import logging
 import pytz
-import datetime
+
 
 import db
 from mensagens import *

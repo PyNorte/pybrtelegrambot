@@ -2,14 +2,35 @@ import sqlite3
 import os.path
 from contextlib import closing
 
-ESTADOS = {"AC": "Acre",
-           "AP": "Amapá",
-           "AM": "Amazonas",
-           "PA": "Pará",
-           "RO": "Rondônia",
-           "RR": "Roraima",
-           "TO": "Tocantins"}
-
+ESTADOS = {"AC": ["Acre", 1],
+           "AP": ["Amapá", 1],
+           "AM": ["Amazonas", 1],
+           "PA": ["Pará", 1],
+           "RO": ["Rondônia", 1],
+           "RR": ["Roraima", 1],
+           "TO": ["Tocantins", 1],
+           "PE": ["Pernambuco", 2],
+           "CE": ["Ceará", 2],
+           "MA": ["Maranhão", 2],
+           "BA": ["Bahia", 2],
+           "PB": ["Paraíba", 2],
+           "RN": ["Rio Grande do Norte", 2],
+           "AL": ["Alagoas", 2],
+           "PI": ["Piauí", 2],
+           "SE": ["Sergipe", 2],
+           "GO": ["Goiás", 3],
+           "MT": ["Mato Grosso", 3],
+           "DF": ["Distrito Federal", 3],
+           "MS": ["Mato Grosso do Sul", 3],
+           "SP": ["São Paulo", 4],
+           "MG": ["Minas Gerais", 4],
+           "RJ": ["Rio de Janeiro", 4],
+           "ES": ["Espírito Santo", 4],
+           "RS": ["Rio Grande do Sul", 5],
+           "PR": ["Paraná", 5],
+           "SC": ["Santa Catarina", 5],
+           "EX": ["Exterior", 6]
+           }
 
 __DB_NAME = None
 
@@ -18,14 +39,30 @@ def cria_banco():
     with conecta() as conn:
         with closing(conn.cursor()) as c:
             c.execute('''CREATE TABLE estados
-                     (id INTEGER PRIMARY KEY, sigla text, nome text)''')
+                     (id INTEGER PRIMARY KEY, sigla text, nome text, regiao_id integer)''')
             c.execute('''CREATE TABLE membros
                      (id INTEGER PRIMARY KEY, nome text, estado integer, telegram integer)''')
-            for sigla, estado in ESTADOS.items():
-                c.execute("""insert into estados(sigla, nome) values(?,?)""", (sigla, estado))
             c.execute("""CREATE TABLE eventos
                          (id INTEGER PRIMARY KEY, data timestamp, descricao text, link text,
                           telegram integer)""")
+            conn.commit()
+
+
+def atualiza_estados():
+    with conecta() as conn:
+        with closing(conn.cursor()) as c:
+            for sigla, estado in ESTADOS.items():
+                nome_estado, regiao = estado
+                c.execute("""select id, sigla, nome, regiao_id from estados where sigla = ?""",
+                          (sigla,))
+                estado = c.fetchone()
+                if not estado:
+                    c.execute("""insert into estados(sigla, nome, regiao_id) values(?,?,?)""",
+                              (sigla, nome_estado, regiao))
+                else:
+                    c.execute("""update estados
+                                 set nome = ?, regiao_id = ? where sigla = ?""",
+                              (nome_estado, regiao, sigla))
             conn.commit()
 
 
@@ -55,11 +92,11 @@ def get_estado(estado):
 def get_stats():
     with conecta() as conn:
         with closing(conn.cursor()) as c:
-            c.execute(u"""select e.nome, count(*)
+            c.execute(u"""select e.nome, count(*), e.regiao_id
                           from membros m, estados e
                           where m.estado=e.id
-                          group by e.nome
-                          order by e.nome""")
+                          group by e.nome, e.regiao_id
+                          order by e.regiao_id, e.nome""")
             por_estado = c.fetchall()
             c.execute(u"""select count(*)
                           from membros m""")
@@ -101,7 +138,7 @@ def lista_users():
             usuarios = ["Membros por Estado:"]
             for linha in c.execute(u"""select m.nome, e.nome from membros m, estados e
                     where m.estado = e.id
-                    order by e.nome, m.nome"""):
+                    order by e.regiao_id, e.nome, m.nome"""):
                 usuarios.append("{0[0]}, {0[1]}".format(linha))
             return "\n".join(usuarios)
 
@@ -128,4 +165,5 @@ def inicializa(nome="membros.db"):
 
     if not existe:
         cria_banco()
+        atualiza_estados()
 
