@@ -47,6 +47,10 @@ Digite /ajuda para ver todos os comandos.
 
 LISTA_DE_ESTADOS = """\
 Acre, Amapá, Amazonas, Pará, Rondônia, Roraima e Tocantins
+
+Membros de outras regiões também podem participar, basta utilizar a sigla de seu estado.
+Utilize EX para exterior.
+
 """
 
 
