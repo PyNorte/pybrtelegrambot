@@ -24,6 +24,8 @@ rio_branco = pytz.timezone("America/Rio_Branco")
 
 
 def destino(mensagem):
+    if mensagem.from_user:
+        return mensagem.from_user.id
     return mensagem.chat.id
 
 
@@ -115,6 +117,13 @@ def send_membro(message):
         bot.send_message(chat_id, MEMBRO_RESULTADO.format(message.from_user, estado.title()))
     else:
         bot.send_message(chat_id, MEMBRO_ESTADO.format(message.chat, estado))
+
+    if not message.from_user.last_name:
+        bot.send_message(chat_id, TELEGRAM_ULTIMO_NOME_AJUDA)
+
+    if not message.from_user.username:
+        bot.send_message(chat_id, TELEGRAM_NOME_USUARIO_AJUDA)
+
 
 
 _logger = telebot.logger

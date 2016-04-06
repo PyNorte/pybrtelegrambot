@@ -115,20 +115,35 @@ def get_eventos():
             return eventos
 
 
+def pega_nome(user):
+    if user.last_name:
+        return "{0.first_name} {0.last_name}".format(user)
+    else:
+        return "{0.first_name}".format(user)
+
+
+def pega_nome_com_estado(nome, estado, username):
+    if username:
+        nome = "{0} (@{1})".format(nome, username)
+    return "{0}, {1}".format(nome, estado)
+
+
 def update_user(from_user, estado):
     with conecta() as conn:
         with closing(conn.cursor()) as c:
             id = from_user.id
+
             c.execute("select id, nome, estado, telegram from membros where telegram=?", (id,))
             membro = c.fetchone()
             if membro is None:
-                c.execute(u"insert into membros(nome, estado, telegram) values (?,?,?)",
-                          ("{0.first_name} {0.last_name}".format(from_user),
-                           estado, id))
+                c.execute(u"insert into membros(nome, estado, telegram, username) values (?,?,?,?)",
+                          (pega_nome(from_user),
+                           estado, id, from_user.username))
             else:
-                c.execute(u"update membros set nome = ?, estado = ? where telegram = ?",
-                          ("{0.first_name} {0.last_name}".format(from_user),
-                           estado, id))
+                c.execute("""update membros set nome = ?, estado = ?, username = ?
+                             where telegram = ?""",
+                          (pega_nome(from_user),
+                           estado, from_user.username, id))
             conn.commit()
 
 
@@ -136,10 +151,10 @@ def lista_users():
     with conecta() as conn:
         with closing(conn.cursor()) as c:
             usuarios = ["Membros por Estado:"]
-            for linha in c.execute(u"""select m.nome, e.nome from membros m, estados e
+            for linha in c.execute(u"""select m.nome, e.nome, m.username from membros m, estados e
                     where m.estado = e.id
                     order by e.regiao_id, e.nome, m.nome"""):
-                usuarios.append("{0[0]}, {0[1]}".format(linha))
+                usuarios.append(pega_nome_com_estado(*linha))
             return "\n".join(usuarios)
 
 
@@ -147,10 +162,10 @@ def lista_users_por_nome():
     with conecta() as conn:
         with closing(conn.cursor()) as c:
             usuarios = ["Membros:"]
-            for linha in c.execute(u"""select m.nome, e.nome from membros m, estados e
+            for linha in c.execute(u"""select m.nome, e.nome, m.username from membros m, estados e
                     where m.estado = e.id
                     order by m.nome"""):
-                usuarios.append("{0[0]}, {0[1]}".format(linha))
+                usuarios.append(pega_nome_com_estado(*linha))
             return "\n".join(usuarios)
 
 

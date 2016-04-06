@@ -1,6 +1,6 @@
 
 WHOAMI = """
-User: {0.username}
+User: @{0.username}
 ID: {0.id}
 Name: {0.first_name} {0.last_name}
 """
@@ -10,7 +10,7 @@ AJUDA = """
 /ajuda   Mostra este resumo dos comandos
 /links   Mostra os link para participar das atividades do grupo
 /estados Lista os estados cobertos pelo grupo
-/membro  Adiciona usuário no grupo do estado (/mecadastra)
+/membro  Adiciona ou atualiza usuário no grupo do estado (/mecadastra)
 /lista   Lista membros por estado
 /nomes   Lista membros por nome (/membros)
 /stat    Número de membros por estado e total
@@ -97,3 +97,16 @@ Horários:
 """
 
 EVENTOS_ROD = ""
+
+TELEGRAM_NOME_USUARIO_AJUDA = """
+
+Você ainda não definiu o seu nome de usuário no Telegram.
+Para defini-lo, vá na opção "Configurações" que fica no menu inicial do Telegram e modifique "Nome de usuário".
+
+"""
+TELEGRAM_ULTIMO_NOME_AJUDA = """
+
+Você ainda não definiu o seu sobrenome no Telegram.
+Para defini-lo, vá na opção "Configurações" que fica no menu inicial do Telegram, e modifique "sobrenome".
+
+"""
