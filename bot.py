@@ -24,8 +24,8 @@ rio_branco = pytz.timezone("America/Rio_Branco")
 
 
 def destino(mensagem):
-    if mensagem.from_user:
-        return mensagem.from_user.id
+    #if mensagem.from_user:
+    #    return mensagem.from_user.id
     return mensagem.chat.id
 
 
