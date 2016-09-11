@@ -19,7 +19,7 @@ AJUDA = """
 
 LINKS = """\
 Telegram:
-https://telegram.me/joinchat/COYq6T90D2FTAkqkTH3GqA
+http://bit.ly/pynorte
 
 Web:
 http://pynorte.python.org.br/
