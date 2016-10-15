@@ -44,7 +44,7 @@ def bot_responda(mensagem, resposta):
     bot.send_message(chat_id, resposta)
 
 def nome(mensagem):
-    if mensagem.new_chat_member: 
+    if hasattr(mensagem, "new_chat_member") and mensagem.new_chat_member: 
         nome = mensagem.new_chat_member.first_name
         if not nome:
             return mensagem.new_chat_member.username
