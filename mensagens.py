@@ -15,6 +15,7 @@ AJUDA = """
 /nomes   Lista membros por nome (/membros)
 /stat    Número de membros por estado e total
 /eventos Próximos eventos
+/hora    Mostra a hora em vários estados do Norte
 """
 
 LINKS = """\
@@ -35,17 +36,22 @@ https://www.facebook.com/pynorte/
 
 """
 
-START = """\
-Olá, eu sou o bot do grupo PyNorte.
+START = """
+Olá {0}, eu sou o bot do grupo PyNorte.
 
 Você pode entrar em contato com o grupo de várias formas!
+Eu só respondo aos comandos em privado. Envie mensagem para @PyNorteBot.
 
 """ + LINKS + """
 Digite /ajuda para ver todos os comandos.
 
 """
 
-LISTA_DE_ESTADOS = """\
+START_REPETIDO = """
+Bem-vindo {0}!
+"""
+
+LISTA_DE_ESTADOS = """
 Acre, Amapá, Amazonas, Pará, Rondônia, Roraima e Tocantins
 
 Membros de outras regiões também podem participar, basta utilizar a sigla de seu estado.
@@ -54,12 +60,12 @@ Utilize EX para exterior.
 """
 
 
-MEMBRO_RESULTADO = """\
+MEMBRO_RESULTADO = """
 User: {0.username} Name: {0.first_name} {0.last_name}
 Estado: {1}
 """
 
-MEMBRO_ESTADO = """\
+MEMBRO_ESTADO = """
 Erro:
 Estado inválido: {1}
 """
@@ -110,3 +116,15 @@ Você ainda não definiu o seu sobrenome no Telegram.
 Para defini-lo, vá na opção "Configurações" que fica no menu inicial do Telegram, e modifique "sobrenome".
 
 """
+
+HORA = """
+{riobranco:%H:%M:%S (%d/%m)} Rio Branco 
+{manaus:%H:%M:%S (%d/%m)} Manaus e Boa Vista 
+{belem:%H:%M:%S (%d/%m)} Belém e Macapá 
+{palmas:%H:%M:%S (%d/%m)} Palmas
+{bruxelas:%H:%M:%S (%d/%m)} Bruxelas (Bélgica) 
+"""
+
+BOT_PRIVADO = "Converse comigo enviando mensagens em privado. "\
+              "Clique em @PyNorteBot e depois em send message."
+              
