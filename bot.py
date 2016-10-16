@@ -44,31 +44,27 @@ def bot_responda(mensagem, resposta):
     bot.send_message(chat_id, resposta)
 
 def nome(mensagem):
-    if hasattr(mensagem, "new_chat_member") and mensagem.new_chat_member: 
-        nome = mensagem.new_chat_member.first_name
-        if not nome:
-            return mensagem.new_chat_member.username
-    else:
-        nome = mensagem.from_user.first_name
-        if not nome:
-            return mensagem.from_user.username
+    nome = mensagem.from_user.first_name
+    if not nome:
+        return mensagem.from_user.username
     return nome
 
 
 def protecao_spam_do_grupo(mensagem):
     global ultimo_aviso
     if em_grupo(mensagem):
-        if not ultimo_aviso or datetime.now() - ultimo_aviso > timedelta(minutes=15):            
+        if not ultimo_aviso or datetime.now() - ultimo_aviso > timedelta(minutes=15):
             bot_responda(mensagem, BOT_PRIVADO)
             ultimo_aviso = datetime.now()
         return True
     else:
-        return False    
+        return False
 
 @bot.message_handler(content_types=['new_chat_participant'])
 def send_novo(message):
+    global ultimo_novo
     nome_u = nome(message)
-    if not ultimo_novo or datetime.now() - ultimo_novo > timedelta(minutes=5):        
+    if not ultimo_novo or datetime.now() - ultimo_novo > timedelta(minutes=5):
         bot_responda(message, START.format(nome_u))
     else:
         bot_responda(message, START_REPETIDO.format(nome_u))
@@ -78,55 +74,55 @@ def send_novo(message):
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     if protecao_spam_do_grupo(message):
-        return            
-    bot_responda(message, START.format(nome(message)))    
-    
+        return
+    bot_responda(message, START.format(nome(message)))
+
 
 
 @bot.message_handler(commands=['help', 'ajuda'])
 def send_help(message):
     if protecao_spam_do_grupo(message):
-        return    
+        return
     bot_responda(message, AJUDA)
 
 
 @bot.message_handler(commands=['link', 'links'])
 def send_link(message):
     if protecao_spam_do_grupo(message):
-        return     
+        return
     bot_responda(message, LINKS)
 
 
 @bot.message_handler(commands=['estados'])
 def send_estados(message):
     if protecao_spam_do_grupo(message):
-        return     
+        return
     bot_responda(message, LISTA_DE_ESTADOS)
 
 
 @bot.message_handler(commands=['whoami'])
-def send_whoami(message): 
+def send_whoami(message):
     if protecao_spam_do_grupo(message):
-        return    
+        return
     bot_responda(message, WHOAMI.format(message.from_user))
 
 
 @bot.message_handler(commands=['lista'])
-def send_lista(message):    
+def send_lista(message):
     bot_responda(message, db.lista_users())
 
 
 @bot.message_handler(commands=['nomes', 'membros'])
 def send_nomes(message):
     if protecao_spam_do_grupo(message):
-        return     
+        return
     bot_responda(message, db.lista_users_por_nome())
 
 
 @bot.message_handler(commands=['estatistica', 'contador', 'total', 'stat', 'stats'])
 def send_stats(message):
     if protecao_spam_do_grupo(message):
-        return     
+        return
     stats = db.get_stats()
     mensagem = STAT_CAB
     for estado in stats[0]:
@@ -138,7 +134,7 @@ def send_stats(message):
 @bot.message_handler(commands=['eventos'])
 def send_eventos(message):
     if protecao_spam_do_grupo(message):
-        return     
+        return
     eventos = db.get_eventos()
     mensagem = EVENTOS_CAB
     for evento in eventos:
@@ -154,7 +150,7 @@ def send_eventos(message):
 @bot.message_handler(commands=['membro', 'mecadastra', 'novo'])
 def send_membro(message):
     if protecao_spam_do_grupo(message):
-        return     
+        return
     params = message.text.split()
     if len(params) < 2:
         bot_responda(message, MEMBRO_AJUDA)
@@ -177,7 +173,7 @@ def send_membro(message):
 @bot.message_handler(commands=['hora', 'horas', 'agora', 'now'])
 def send_hora(message):
     if protecao_spam_do_grupo(message):
-        return    
+        return
     agora = datetime.utcnow().replace(tzinfo=pytz.utc)
     horarios = {
         "manaus": manaus.normalize(agora),
