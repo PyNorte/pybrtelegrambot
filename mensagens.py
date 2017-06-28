@@ -40,7 +40,15 @@ START = """
 Olá {0}, eu sou o bot do grupo PyNorte.
 
 Você pode entrar em contato com o grupo de várias formas!
-Eu só respondo aos comandos em privado. Envie mensagem para @PyNorteBot.
+Eu só respondo aos comandos em privado (você deve conversar diretamente comigo).
+
+Clique em: @PyNorteBot para conversar comigo em privado, e depois para mais intruções envie:
+
+/ajuda
+
+Não se esqueça de se cadastrar, digitando: 
+
+/mecadastra SIGLA_DO_SEU_ESTADO
 
 """ + LINKS + """
 Digite /ajuda para ver todos os comandos.
@@ -126,5 +134,5 @@ HORA = """
 """
 
 BOT_PRIVADO = "Converse comigo enviando mensagens em privado. "\
-              "Clique em @PyNorteBot e depois em send message."
+              "Clique em @PyNorteBot e depois para mais intruções, envie: /ajuda"
               
