@@ -149,8 +149,8 @@ def send_eventos(message):
 
 @bot.message_handler(commands=['membro', 'mecadastra', 'novo'])
 def send_membro(message):
-    if protecao_spam_do_grupo(message):
-        return
+    #if protecao_spam_do_grupo(message):
+    #    return
     params = message.text.split()
     if len(params) < 2:
         bot_responda(message, MEMBRO_AJUDA)
