@@ -1,3 +1,3 @@
-pyTelegramBotAPI==2.1.7
-pytz==2016.7
+pyTelegramBotAPI==3.2.1
+pytz==2017.2
 
