@@ -42,11 +42,11 @@ Olá {0}, eu sou o bot do grupo PyNorte.
 Você pode entrar em contato com o grupo de várias formas!
 Eu só respondo aos comandos em privado (você deve conversar diretamente comigo).
 
-Clique em: @PyNorteBot para conversar comigo em privado, e depois para mais intruções envie:
+Clique em: @PyNorteBot para conversar comigo em privado, e depois para mais instruções envie:
 
 /ajuda
 
-Não se esqueça de se cadastrar, digitando: 
+Não se esqueça de se cadastrar, digitando:
 
 /mecadastra SIGLA_DO_SEU_ESTADO
 
@@ -126,13 +126,13 @@ Para defini-lo, vá na opção "Configurações" que fica no menu inicial do Tel
 """
 
 HORA = """
-{riobranco:%H:%M:%S (%d/%m)} Rio Branco 
-{manaus:%H:%M:%S (%d/%m)} Manaus e Boa Vista 
-{belem:%H:%M:%S (%d/%m)} Belém e Macapá 
+{riobranco:%H:%M:%S (%d/%m)} Rio Branco
+{manaus:%H:%M:%S (%d/%m)} Manaus e Boa Vista
+{belem:%H:%M:%S (%d/%m)} Belém e Macapá
 {palmas:%H:%M:%S (%d/%m)} Palmas
-{bruxelas:%H:%M:%S (%d/%m)} Bruxelas (Bélgica) 
+{bruxelas:%H:%M:%S (%d/%m)} Bruxelas (Bélgica)
 """
 
 BOT_PRIVADO = "Converse comigo enviando mensagens em privado. "\
-              "Clique em @PyNorteBot e depois para mais intruções, envie: /ajuda"
-              
+              "Clique em @PyNorteBot e depois para mais instruções, envie: /ajuda"
+
