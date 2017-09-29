@@ -86,7 +86,7 @@ def protecao_spam_do_grupo(mensagem, tipo):
     global ultima_mensagem
     if em_grupo(mensagem):
         ultimo = ultima_mensagem.get(tipo)
-        if ultimo and datetime.now() - ultimo > timedelta(minutes=TEMPO_ENTRE_MENSAGENS):
+        if ultimo and datetime.now() - ultimo < timedelta(minutes=TEMPO_ENTRE_MENSAGENS):
             bot_responda(mensagem, BOT_PRIVADO)
             return True
         ultima_mensagem[tipo] = datetime.now()
