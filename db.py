@@ -1,6 +1,63 @@
 import sqlite3
 import os.path
 from contextlib import closing
+from pony.orm import Database, Required, Optional, Set, show, \
+                     db_session, OperationalError, sql_debug, count
+from datetime import datetime
+from unicodedata import normalize
+
+
+db = Database()
+
+#
+# Entidades
+#
+
+
+class Regiao(db.Entity):
+    """Regiões do Brasil"""
+    nome = Required(str)
+    estados = Set('Estado')
+
+
+class Estado(db.Entity):
+    """Estado da federação"""
+    _table_ = "estados"
+    sigla = Required(str)
+    nome = Required(str)
+    nome_sem_acentos = Optional(str)
+    regiao = Required(Regiao, column="regiao_id")
+    membros = Set('Membro')
+
+
+class Membro(db.Entity):
+    """Membro do grupo"""
+    _table_ = "membros"
+    nome = Required(str)
+    estado = Required(Estado)
+    telegram = Optional(int)
+    username = Required(str)
+
+
+class Evento(db.Entity):
+    """Evento organizado pelo grupo ou interessante para o mesmo"""
+    _table_ = "eventos"
+    data = Required(datetime)
+    descricao = Required(str)
+    link = Required(str)
+    telegram = Optional(int)
+
+#
+# Constantes
+#
+
+REGIOES = {1: "Norte",
+           2: "Nordeste",
+           3: "Centro-oeste",
+           4: "Sudeste",
+           5: "Sul",
+           6: "Exterior"}
+
 
 ESTADOS = {"AC": ["Acre", 1],
            "AP": ["Amapá", 1],
@@ -32,90 +89,109 @@ ESTADOS = {"AC": ["Acre", 1],
            "EX": ["Exterior", 6]
            }
 
-__DB_NAME = None
+
+def sem_acentos(texto):
+    """Tira acentos de texto"""
+    return normalize("NFKD", texto).encode('ASCII','ignore').decode('ASCII')
 
 
-def cria_banco():
-    with conecta() as conn:
-        with closing(conn.cursor()) as c:
-            c.execute('''CREATE TABLE estados
-                     (id INTEGER PRIMARY KEY, sigla text, nome text, regiao_id integer)''')
-            c.execute('''CREATE TABLE membros
-                     (id INTEGER PRIMARY KEY, nome text, estado integer, telegram integer)''')
-            c.execute("""CREATE TABLE eventos
-                         (id INTEGER PRIMARY KEY, data timestamp, descricao text, link text,
-                          telegram integer)""")
-            conn.commit()
+@db_session
+def atualiza_regioes():
+    for id, nome in REGIOES.items():
+        regiao = Regiao.select().filter(id=id).first()
+        if regiao:
+            if regiao.nome != nome:
+                regiao.nome = nome
+        else:
+            Regiao(nome=nome, id=id)
 
 
+@db_session
 def atualiza_estados():
-    with conecta() as conn:
-        with closing(conn.cursor()) as c:
-            for sigla, estado in ESTADOS.items():
-                nome_estado, regiao = estado
-                c.execute("""select id, sigla, nome, regiao_id from estados where sigla = ?""",
-                          (sigla,))
-                estado = c.fetchone()
-                if not estado:
-                    c.execute("""insert into estados(sigla, nome, regiao_id) values(?,?,?)""",
-                              (sigla, nome_estado, regiao))
-                else:
-                    c.execute("""update estados
-                                 set nome = ?, regiao_id = ? where sigla = ?""",
-                              (nome_estado, regiao, sigla))
-            conn.commit()
+    for sigla, nome_regiao in ESTADOS.items():
+        nome_estado, regiao = nome_regiao
+        estado = Estado.select().filter(sigla=sigla).first()
+        if estado:
+            nome_sem_acentos = sem_acentos(nome_estado).lower()
+            if estado.nome_sem_acentos != nome_sem_acentos:
+                estado.nome_sem_acentos = nome_sem_acentos
+            if estado.nome != nome_estado:
+                estado.nome = nome_estado
+            if estado.regiao.get_pk() != regiao:
+                print("Regiao diferente", estado.regiao.get_pk(), regiao)
 
 
+@db_session
 def lista():
-    with conecta() as conn:
-        with closing(conn.cursor()) as c:
-            print("Estados")
-            for linha in c.execute("""select id, sigla, nome from estados"""):
-                print(linha)
-            print("Membros")
-            for linha in c.execute("""select id, nome, estado, telegram from membros"""):
-                print(linha)
+    """Usada no início do bot para mostrar a situação atual do banco"""
+    print("Regiões")
+    for regiao in Regiao.select().order_by(Regiao.id):
+        print(regiao.nome)
+    print("Estados")
+    for estado in Estado.select().order_by(Estado.id):
+        print(estado.id, estado.sigla, estado.nome)
+    print("Membros")
+    for membro in Membro.select().order_by(Membro.nome):
+        print("{0:5} {1:50} {2}".format(
+            membro.id, membro.nome, membro.estado.nome, membro.telegram))
 
 
+@db_session
 def get_estado(estado):
-    with conecta() as conn:
-        with closing(conn.cursor()) as c:
-            c.execute(u"""select id, sigla, nome from estados where sigla = ? or nome = ?""",
-                      (estado.upper(), estado.title()))
-            estado = c.fetchone()
-            if estado is None:
-                return None
-            else:
-                return estado[0]
+    """Tenta pesquisar o estado por sigla ou por nome"""
+    nome = sem_acentos(estado).lower()
+    sigla = estado.upper()
+    print("***", nome, sigla)
+    return Estado.select(lambda e: e.nome_sem_acentos == nome or e.sigla == sigla).first()
 
 
+@db_session
 def get_stats():
-    with conecta() as conn:
-        with closing(conn.cursor()) as c:
-            c.execute(u"""select e.nome, count(*), e.regiao_id
-                          from membros m, estados e
-                          where m.estado=e.id
-                          group by e.nome, e.regiao_id
-                          order by e.regiao_id, e.nome""")
-            por_estado = c.fetchall()
-            c.execute(u"""select count(*)
-                          from membros m""")
-            total = c.fetchone()[0]
-            return [por_estado, total]
+    """Estatísticas por estado. Retorna uma tupla:
+       Primeiro elemento: uma lista com a quantidade de membros por estado
+       Segundo elemento: o total de membros"""
+    por_estado = db.execute(
+        """select e.nome, count(*), e.regiao_id
+                from membros m, estados e
+                where m.estado=e.id
+                group by e.nome, e.regiao_id
+                order by e.regiao_id, e.nome""").fetchall()
+
+    total = Membro.select().count()
+    return (por_estado, total)
 
 
+@db_session
 def get_eventos():
-    with conecta() as conn:
-        with closing(conn.cursor()) as c:
-            c.execute(u"""select * from eventos
-                          where data >= datetime('now')
-                          order by data""")
-            eventos = c.fetchall()
-            print(eventos)
-            return eventos
+    """Retorna lista de eventos futuros"""
+    return Evento.select(lambda e: e.data >= datetime.now()).order_by(Evento.data)[:]
+
+@db_session
+def get_eventos_admin():
+    """Retorna lista de eventos"""
+    return Evento.select().order_by(Evento.data)[:]
+
+
+@db_session
+def get_evento_admin(id):
+    """Retorna um evento"""
+    return Evento.select().filter(id=id).first()
+
+
+@db_session
+def edita_evento(id, **kwargs):
+    evento = get_evento_admin(id)
+    for k, v in kwargs.items():
+        setattr(evento, k, v)
+
+
+@db_session
+def cria_evento(**kwargs):
+    return Evento(**kwargs)
 
 
 def pega_nome(user):
+    """Função para formatar o nome do usuário"""
     if user.last_name:
         return "{0.first_name} {0.last_name}".format(user)
     else:
@@ -128,57 +204,51 @@ def pega_nome_com_estado(nome, estado, username):
     return "{0}, {1}".format(nome, estado)
 
 
+@db_session
 def update_user(from_user, estado):
-    with conecta() as conn:
-        with closing(conn.cursor()) as c:
-            id = from_user.id
-
-            c.execute("select id, nome, estado, telegram from membros where telegram=?", (id,))
-            membro = c.fetchone()
-            if membro is None:
-                c.execute(u"insert into membros(nome, estado, telegram, username) values (?,?,?,?)",
-                          (pega_nome(from_user),
-                           estado, id, from_user.username))
-            else:
-                c.execute("""update membros set nome = ?, estado = ?, username = ?
-                             where telegram = ?""",
-                          (pega_nome(from_user),
-                           estado, from_user.username, id))
-            conn.commit()
+    id = from_user.id
+    estado = get_estado(estado)
+    membro = Membro.select(lambda m: m.telegram == id).first()
+    if membro is None:
+        Membro(nome=pega_nome(from_user), estado=estado,
+               telegram=id, username=from_user.username)
+    else:
+        membro.nome = pega_nome(from_user)
+        membro.estado = estado
+        membro.username = from_user.username
+        membro.telegram = id
 
 
+@db_session
 def lista_users():
-    with conecta() as conn:
-        with closing(conn.cursor()) as c:
-            usuarios = ["Membros por Estado:"]
-            for linha in c.execute(u"""select m.nome, e.nome, m.username from membros m, estados e
-                    where m.estado = e.id
-                    order by e.regiao_id, e.nome, m.nome"""):
-                usuarios.append(pega_nome_com_estado(*linha))
-            return "\n".join(usuarios)
+    usuarios = ["Membros por Estado:"]
+    for membro in  db.Membro.select().order_by(
+            lambda m: (m.estado.regiao.nome, m.estado.nome, m.nome)):
+        usuarios.append(pega_nome_com_estado(membro.nome, membro.estado.nome, membro.username))
+    return "\n".join(usuarios)
 
 
+@db_session
 def lista_users_por_nome():
-    with conecta() as conn:
-        with closing(conn.cursor()) as c:
-            usuarios = ["Membros:"]
-            for linha in c.execute(u"""select m.nome, e.nome, m.username from membros m, estados e
-                    where m.estado = e.id
-                    order by m.nome"""):
-                usuarios.append(pega_nome_com_estado(*linha))
-            return "\n".join(usuarios)
-
-
-def conecta():
-    return sqlite3.connect(__DB_NAME, detect_types=sqlite3.PARSE_DECLTYPES)
+    usuarios = ["Membros:"]
+    for membro in db.Membro.select().order_by(Membro.nome):
+        usuarios.append(
+            pega_nome_com_estado(membro.nome, membro.estado.nome, membro.username))
+    return "\n".join(usuarios)
 
 
 def inicializa(nome="membros.db"):
-    global __DB_NAME
-    __DB_NAME = nome
-    existe = os.path.exists(nome)
-
-    if not existe:
-        cria_banco()
-        atualiza_estados()
+    db.bind(provider='sqlite', filename=nome, create_db=True)
+    while True:
+        try:
+            db.generate_mapping(create_tables=True)
+            break
+        except OperationalError as oe:
+            """ORM do homem pobre"""
+            menssagem = str(oe)
+            if menssagem == "no such column: estados.nome_sem_acentos":
+                with db_session:
+                    db.execute("alter table estados add nome_sem_acentos")
+    atualiza_regioes()
+    atualiza_estados()
 

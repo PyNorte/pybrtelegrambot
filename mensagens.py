@@ -82,8 +82,12 @@ MEMBRO_AJUDA = """
 Uso:
 /membro estado
 
+Você precisa escrever /membro E_A_SIGLA_DO_SEU_ESTADO na mesma linha.
+
 Exemplo:
 /membro amazonas
+/membro am
+/membro para
 """
 
 STAT_CAB = """
@@ -100,9 +104,24 @@ Próximos Eventos:
 """
 
 EVENTOS_DESC = """
-Evento: {0[2]}
-Link: {0[3]}
-Data: {0[1]:%d/%m/%y}
+Evento: {0.descricao}
+Link: {0.link}
+Data: {0.data:%d/%m/%y}
+Horários:
+  Rio Branco: {1:%H:%Mh}
+  Manaus, Boa Vista, Porto Velho: {2:%H:%Mh}
+  Belém, Palmas, Macapá: {3:%H:%Mh}
+
+"""
+
+EVENTOS_LISTA_ADMIN = """
+Id: {0.id} Evento: {0.descricao}
+"""
+
+EVENTOS_DESC_ADMIN = """
+Id: {0.id} Evento: {0.descricao}
+Link: {0.link}
+Data: {0.data:%d/%m/%y}
 Horários:
   Rio Branco: {1:%H:%Mh}
   Manaus, Boa Vista, Porto Velho: {2:%H:%Mh}
@@ -111,6 +130,25 @@ Horários:
 """
 
 EVENTOS_ROD = ""
+
+AJUDA_EVENTOS_AJUDA = """
+/evento_admin ajuda
+/evento_admin lista
+/evento_admin mostra id
+/evento_admin apaga id
+/evento_admin edita id [descricao|link|telegram|data|hora] valor
+/evento_admin novo id YYYY-MM-DD HH:MM DESCRICAO LINK
+"""
+
+SEM_EVENTOS_FUTUROS = "Não há eventos futuros cadastrados."
+
+AJUDA_EVENTO_MOSTRA = "Formato: /evento_admin mostra id-do-evento"
+
+AJUDA_EVENTO_EDITA = "Formato: /evento_admin edita id [descricao|link|data|hora] valor"
+
+AJUDA_EVENTO_NOVO = ("Formato: /evento_admin novo YYYY-MM-DD HH:MM DESCRICAO LINK\n"
+                     "Utilize aspas ou apostrófes para passar valores com espaços.\n"
+                     "Horário GMT!")
 
 TELEGRAM_NOME_USUARIO_AJUDA = """
 
