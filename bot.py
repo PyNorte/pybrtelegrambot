@@ -108,6 +108,7 @@ def markdown_escape(texto):
     texto = texto.replace("*", "\*")
     texto = texto.replace("_", "\_")
     texto = texto.replace("`", "\`")
+    return texto
 
 
 @bot.message_handler(content_types=['new_chat_participant'])
@@ -125,7 +126,7 @@ def send_welcome(message):
     """Mensagem de boas vindas"""
     if protecao_spam_do_grupo(message, "start"):
         return
-    bot_responda(message, START.format(nome(message)))
+    bot_responda(message, START.format(markdown_escape(nome(message))), parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['help', 'ajuda'])

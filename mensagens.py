@@ -38,8 +38,9 @@ Clique em: @PyNorteBot para conversar comigo em privado, e depois para mais inst
 `/ajuda`
 
 Não se esqueça de se cadastrar, digitando:
-
 `/mecadastra SIGLA_DO_SEU_ESTADO`
+Na mesma linha! Exemplo:
+`/mecadastra am`
 
 """ + LINKS + """
 
