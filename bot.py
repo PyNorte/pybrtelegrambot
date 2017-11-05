@@ -104,14 +104,20 @@ def protecao_spam_do_grupo(mensagem, tipo):
     return False
 
 
+def markdown_escape(texto):
+    texto = texto.replace("*", "\*")
+    texto = texto.replace("_", "\_")
+    texto = texto.replace("`", "\`")
+
+
 @bot.message_handler(content_types=['new_chat_participant'])
 def send_novo(message):
     """Mensagem enviada para novos integrantes do grupo"""
-    nome_u = nome(message)
+    nome_u = markdown_escape(nome(message))
     if not protecao_spam_do_grupo(message, "novo"):
-        bot_responda(message, START.format(nome_u))
+        bot_responda(message, START.format(nome_u), parse_mode="Markdown")
     else:
-        bot_responda(message, START_REPETIDO.format(nome_u))
+        bot_responda(message, START_REPETIDO.format(nome_u), parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['start'])
