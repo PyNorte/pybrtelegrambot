@@ -125,7 +125,7 @@ AJUDA_EVENTOS_AJUDA = """
 `/evento_admin mostra id` Mostra o evento por id
 `/evento_admin apaga id` Apaga o evento com a id
 `/evento_admin edita id [descricao|link|telegram|data|hora] valor` Edita um campo por vez.
-`/evento_admin novo id YYYY-MM-DD HH:MM DESCRICAO LINK` Cria um novo evento.
+`/evento_admin novo YYYY-MM-DD HH:MM DESCRICAO LINK` Cria um novo evento.
 """
 
 SEM_EVENTOS_FUTUROS = "Não há eventos futuros cadastrados."

@@ -343,7 +343,7 @@ def evento(message):
        /evento_admin mostra id
        /evento_admin apaga id
        /evento_admin edita id [descricao|link|telegram|data|hora] valor
-       /evento_admin novo id YYYY-MM-DD HH:MM DESCRICAO LINK
+       /evento_admin novo YYYY-MM-DD HH:MM DESCRICAO LINK
     """
     if not verifica_se_admin(message):
         return
