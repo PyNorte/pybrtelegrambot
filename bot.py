@@ -76,11 +76,11 @@ def quebra_mensagem(mensagem):
         yield "\n".join(texto)
 
 
-def bot_responda(mensagem, resposta):
+def bot_responda(mensagem, resposta, parse_mode=None):
     """Telegram não aceita mensagens com mais de 5000 caracteres"""
     chat_id = destino(mensagem)
     for r in quebra_mensagem(resposta):
-        bot.send_message(chat_id, r, parse_mode="Markdown")
+        bot.send_message(chat_id, r, parse_mode=parse_mode)
 
 
 def nome(mensagem):
@@ -127,7 +127,7 @@ def send_help(message):
     """Mensagem com ajuda sobre os comandos do bot"""
     if protecao_spam_do_grupo(message, "help"):
         return
-    bot_responda(message, AJUDA)
+    bot_responda(message, AJUDA, parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['link', 'links'])
@@ -179,7 +179,7 @@ def send_stats(message):
     for estado in stats[0]:
         mensagem += STAT_ESTADO.format(estado)
     mensagem += STAT_ROD.format(stats[1])
-    bot_responda(message, mensagem)
+    bot_responda(message, mensagem, parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['eventos'])
@@ -199,7 +199,7 @@ def send_eventos(message):
     else:
         mensagem += "Não há eventos futuros cadastrados."
     mensagem += EVENTOS_ROD
-    bot_responda(message, mensagem)
+    bot_responda(message, mensagem, parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['membro', 'mecadastra', 'novo'])
@@ -234,7 +234,7 @@ def verifica_se_admin(message):
 
 
 def eventos_ajuda(message):
-    bot_responda(message, AJUDA_EVENTOS_AJUDA)
+    bot_responda(message, AJUDA_EVENTOS_AJUDA, parse_mode="Markdown")
 
 
 def traduza_hora(evento):
