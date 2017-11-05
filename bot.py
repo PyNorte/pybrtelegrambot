@@ -11,7 +11,7 @@ from mensagens import *
 
 API_TOKEN = os.getenv('API_TOKEN')
 DB_NAME = os.getenv('BOT_DB', "membros.db")
-ADMINS = [int(id) for id in os.getenv('BOT_ADMINS').split()] or []
+ADMINS = [int(id) for id in os.getenv('BOT_ADMINS').split(",")] or []
 
 assert API_TOKEN is not None
 
