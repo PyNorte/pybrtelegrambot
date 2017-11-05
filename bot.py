@@ -3,9 +3,10 @@ import os
 import logging
 import pytz
 import shlex
-from datetime import datetime, timedelta, time
-
+import subprocess
 import db
+
+from datetime import datetime, timedelta, time
 from mensagens import *
 
 API_TOKEN = os.getenv('API_TOKEN')
@@ -36,6 +37,10 @@ TEMPO_ENTRE_MENSAGENS = 15
 
 # Tamanho maximo do texto a enviaer em uma unica mensagem
 TAMANHO_MAXIMO = 4000
+
+
+def get_git_revision_short_hash():
+    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).strip().decode("utf-8")
 
 
 def em_grupo(mensagem):
@@ -75,7 +80,7 @@ def bot_responda(mensagem, resposta):
     """Telegram não aceita mensagens com mais de 5000 caracteres"""
     chat_id = destino(mensagem)
     for r in quebra_mensagem(resposta):
-        bot.send_message(chat_id, r)
+        bot.send_message(chat_id, r, parse_mode="Markdown")
 
 
 def nome(mensagem):
@@ -297,6 +302,18 @@ def eventos_edita(message, comandos):
     db.edita_evento(id, **{subcomando: comandos[4], "telegram": message.from_user.id})
     envia_evento(message, db.get_evento_admin(id))
 
+def eventos_apaga(message, comandos):
+    if len(comandos) != 3:
+        bot_responda(mensage, AJUDA_EVENTO_APAGA)
+        return
+    id = int(comandos[2])
+    evento = db.get_evento_admin(id)
+    if not evento:
+        bot_responda(mensage, "Evento com id {} não encontrado.".format(id))
+        return
+    envia_evento(message, evento)
+    db.apaga_evento(id)
+
 
 def eventos_cria(message, comandos):
     if len(comandos) != 6:
@@ -335,6 +352,8 @@ def evento(message):
             eventos_mostra(message, comandos)
         elif comandos[1] in ["edita"]:
             eventos_edita(message, comandos)
+        elif comandos[1] in ["apaga"]:
+            eventos_apaga(message, comandos)
         elif comandos[1] in ["cria", "novo"]:
             eventos_cria(message, comandos)
         else:
@@ -358,10 +377,15 @@ def send_hora(message):
     }
     bot_responda(message, HORA.format(**horarios))
 
+@bot.message_handler(commands=['versão', 'versao'])
+def versao(message):
+    if protecao_spam_do_grupo(message, "versao"):
+        return
+    bot_responda(message, "Versão: {}".format(VERSAO))
 
 # Principal
 _logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
-
+VERSAO = get_git_revision_short_hash()
 # Inicia o pooling da api
 bot.polling(none_stop=True)

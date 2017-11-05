@@ -190,6 +190,11 @@ def cria_evento(**kwargs):
     return Evento(**kwargs)
 
 
+@db_session
+def apaga_evento(id):
+    evento = get_evento_admin(id)
+    evento.delete()
+
 def pega_nome(user):
     """Função para formatar o nome do usuário"""
     if user.last_name:
