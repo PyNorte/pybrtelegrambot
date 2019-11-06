@@ -25,6 +25,7 @@ Web: http://pynorte.python.org.br/
 Lista de email: https://groups.google.com/d/forum/pynorte
 GitHub: https://github.com/PyNorte/
 Facebook: https://www.facebook.com/pynorte/
+Instagram: https://www.instagram.com/pynorteoficial/
 """
 
 START = """

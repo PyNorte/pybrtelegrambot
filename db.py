@@ -32,8 +32,8 @@ class Membro(db.Entity):
     _table_ = "membros"
     nome = Required(str)
     estado = Required(Estado)
-    telegram = Optional(int)
-    username = Required(str)
+    telegram = Required(int)
+    username = Optional(str)
 
 
 class Evento(db.Entity):
