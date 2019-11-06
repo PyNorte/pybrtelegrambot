@@ -156,11 +156,9 @@ Para defini-lo, vá na opção "Configurações" que fica no menu inicial do Tel
 HORA = """
 {riobranco:%H:%M:%S (%d/%m)} Rio Branco
 {manaus:%H:%M:%S (%d/%m)} Manaus e Boa Vista
-{belem:%H:%M:%S (%d/%m)} Belém e Macapá
-{palmas:%H:%M:%S (%d/%m)} Palmas
+{belem:%H:%M:%S (%d/%m)} Belém, Palmas e Macapá
 {bruxelas:%H:%M:%S (%d/%m)} Bruxelas (Bélgica)
 """
 
 BOT_PRIVADO = "Converse comigo enviando mensagens em privado. "\
               "Clique em @PyNorteBot e depois para mais instruções, envie: /ajuda"
-

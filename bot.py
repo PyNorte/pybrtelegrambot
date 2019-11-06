@@ -7,7 +7,18 @@ import subprocess
 import db
 
 from datetime import datetime, timedelta, time
-from mensagens import *
+from mensagens import (
+    START, START_REPETIDO, AJUDA, LINKS, LISTA_DE_ESTADOS,
+    STAT_CAB, STAT_ESTADO, STAT_ROD, WHOAMI,
+    EVENTOS_CAB, EVENTOS_DESC, EVENTOS_ROD,
+    EVENTOS_DESC_ADMIN, EVENTOS_LISTA_ADMIN,
+    MEMBRO_AJUDA, MEMBRO_RESULTADO, MEMBRO_ESTADO,
+    AJUDA_EVENTOS_AJUDA, AJUDA_EVENTO_MOSTRA, AJUDA_EVENTO_EDITA,
+    AJUDA_EVENTO_APAGA,
+    AJUDA_EVENTO_NOVO, SEM_EVENTOS_FUTUROS,
+    TELEGRAM_ULTIMO_NOME_AJUDA, TELEGRAM_NOME_USUARIO_AJUDA,
+    HORA, BOT_PRIVADO
+    )
 
 API_TOKEN = os.getenv('API_TOKEN')
 DB_NAME = os.getenv('BOT_DB', "membros.db")
@@ -26,7 +37,6 @@ manaus = pytz.timezone("America/Manaus")
 belem = pytz.timezone("America/Belem")
 rio_branco = pytz.timezone("America/Rio_Branco")
 bruxelas = pytz.timezone("Europe/Brussels")
-palmas = pytz.timezone("America/Araguaina")
 
 # Hora em que o último aviso foi postado no grupo
 # Usado para evitar que usuários abusem do espaço do grupo para comandos
@@ -105,9 +115,9 @@ def protecao_spam_do_grupo(mensagem, tipo):
 
 
 def markdown_escape(texto):
-    texto = texto.replace("*", "\*")
-    texto = texto.replace("_", "\_")
-    texto = texto.replace("`", "\`")
+    texto = texto.replace("*", r"\*")
+    texto = texto.replace("_", r"\_")
+    texto = texto.replace("`", r"\`")
     return texto
 
 
@@ -262,7 +272,7 @@ def eventos_gera_lista(message):
     if eventos:
         mensagem = []
         for evento in eventos:
-            m, b, r  = traduza_hora(evento)
+            m, b, r = traduza_hora(evento)
             mensagem.append(EVENTOS_LISTA_ADMIN.format(evento, r, m, b))
         mensagem = "\n".join(mensagem)
     else:
@@ -272,12 +282,12 @@ def eventos_gera_lista(message):
 
 def eventos_mostra(message, comandos):
     if len(comandos) != 3:
-        bot_responda(mensage, AJUDA_EVENTO_MOSTRA)
+        bot_responda(message, AJUDA_EVENTO_MOSTRA)
         return
     id = int(comandos[2])
     evento = db.get_evento_admin(id)
     if not evento:
-        bot_responda(mensage, "Evento com id {} não encontrado.".format(id))
+        bot_responda(message, "Evento com id {} não encontrado.".format(id))
         return
     envia_evento(message, evento)
 
@@ -298,7 +308,7 @@ def eventos_edita(message, comandos):
     if subcomando in ["data", "hora"]:
         base = evento.data
         if subcomando == "data":
-            data = datetime.strptime(comandos[4], "%Y-%m-%d" )
+            data = datetime.strptime(comandos[4], "%Y-%m-%d")
             base = datetime.combine(data.date(), base.time())
         if subcomando == "hora":
             horas, minutos = [int(x) for x in comandos[4].split(":")]
@@ -309,14 +319,15 @@ def eventos_edita(message, comandos):
     db.edita_evento(id, **{subcomando: comandos[4], "telegram": message.from_user.id})
     envia_evento(message, db.get_evento_admin(id))
 
+
 def eventos_apaga(message, comandos):
     if len(comandos) != 3:
-        bot_responda(mensage, AJUDA_EVENTO_APAGA)
+        bot_responda(message, AJUDA_EVENTO_APAGA)
         return
     id = int(comandos[2])
     evento = db.get_evento_admin(id)
     if not evento:
-        bot_responda(mensage, "Evento com id {} não encontrado.".format(id))
+        bot_responda(message, "Evento com id {} não encontrado.".format(id))
         return
     envia_evento(message, evento)
     db.apaga_evento(id)
@@ -328,7 +339,7 @@ def eventos_cria(message, comandos):
         return
     dia = comandos[2]
     hora = comandos[3]
-    data = datetime.strptime("{} {}".format(dia, hora), "%Y-%m-%d %H:%M" )
+    data = datetime.strptime("{} {}".format(dia, hora), "%Y-%m-%d %H:%M")
     descricao = comandos[4]
     link = comandos[5]
 
@@ -379,16 +390,17 @@ def send_hora(message):
         "manaus": manaus.normalize(agora),
         "belem": belem.normalize(agora),
         "riobranco": rio_branco.normalize(agora),
-        "palmas": palmas.normalize(agora),
         "bruxelas": bruxelas.normalize(agora)
     }
     bot_responda(message, HORA.format(**horarios))
+
 
 @bot.message_handler(commands=['versão', 'versao'])
 def versao(message):
     if protecao_spam_do_grupo(message, "versao"):
         return
     bot_responda(message, "Versão: {}".format(VERSAO))
+
 
 # Principal
 _logger = telebot.logger

@@ -1,8 +1,5 @@
-import sqlite3
-import os.path
-from contextlib import closing
-from pony.orm import Database, Required, Optional, Set, show, \
-                     db_session, OperationalError, sql_debug, count
+from pony.orm import Database, Required, Optional, Set, \
+                     db_session, OperationalError
 from datetime import datetime
 from unicodedata import normalize
 
@@ -51,6 +48,7 @@ class Evento(db.Entity):
 # Constantes
 #
 
+
 REGIOES = {1: "Norte",
            2: "Nordeste",
            3: "Centro-oeste",
@@ -92,7 +90,7 @@ ESTADOS = {"AC": ["Acre", 1],
 
 def sem_acentos(texto):
     """Tira acentos de texto"""
-    return normalize("NFKD", texto).encode('ASCII','ignore').decode('ASCII')
+    return normalize("NFKD", texto).encode('ASCII', 'ignore').decode('ASCII')
 
 
 @db_session
@@ -166,6 +164,7 @@ def get_eventos():
     """Retorna lista de eventos futuros"""
     return Evento.select(lambda e: e.data >= datetime.now()).order_by(Evento.data)[:]
 
+
 @db_session
 def get_eventos_admin():
     """Retorna lista de eventos"""
@@ -194,6 +193,7 @@ def cria_evento(**kwargs):
 def apaga_evento(id):
     evento = get_evento_admin(id)
     evento.delete()
+
 
 def pega_nome(user):
     """Função para formatar o nome do usuário"""
@@ -227,7 +227,7 @@ def update_user(from_user, estado):
 @db_session
 def lista_users():
     usuarios = ["Membros por Estado:"]
-    for membro in  db.Membro.select().order_by(
+    for membro in db.Membro.select().order_by(
             lambda m: (m.estado.regiao.nome, m.estado.nome, m.nome)):
         usuarios.append(pega_nome_com_estado(membro.nome, membro.estado.nome, membro.username))
     return "\n".join(usuarios)
@@ -256,4 +256,3 @@ def inicializa(nome="membros.db"):
                     db.execute("alter table estados add nome_sem_acentos")
     atualiza_regioes()
     atualiza_estados()
-
