@@ -6,6 +6,31 @@ from unicodedata import normalize
 
 db = Database()
 
+# Migracao para cidades 0002
+# Migracoes não são suportadas pelo Pony ORM antes da versão 0.8
+# Manualmente gerada pela diferença entre os schemas do
+# banco antigo com o novo.
+MIGRACAO_0002 = ["""
+CREATE TABLE IF NOT EXISTS "Regiao" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "nome" TEXT NOT NULL
+);""", """
+alter table membros
+add column "cidade" INTEGER REFERENCES "municipios" ("id") ON DELETE SET NULL;
+""", """
+CREATE TABLE IF NOT EXISTS "municipios" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "nome" TEXT NOT NULL,
+  "estado_id" INTEGER NOT NULL REFERENCES "estados" ("id") ON DELETE CASCADE,
+  "nome_sem_acentos" TEXT NOT NULL,
+  "codigo" TEXT NOT NULL
+);
+""", """
+CREATE INDEX "idx_municipios__estado_id" ON "municipios" ("estado_id");
+""", """
+CREATE INDEX "idx_membros__cidade" ON "membros" ("cidade");
+"""]
+
 #
 # Entidades
 #
@@ -25,6 +50,17 @@ class Estado(db.Entity):
     nome_sem_acentos = Optional(str)
     regiao = Required(Regiao, column="regiao_id")
     membros = Set('Membro')
+    muncicipios = Set('Municipio')
+
+
+class Municipio(db.Entity):
+    """Municipios de cada Estado"""
+    _table_ = "municipios"
+    nome = Required(str)
+    estado = Required(Estado, column="estado_id")
+    nome_sem_acentos = Optional(str)
+    codigo = Required(str)
+    membros = Set('Membro')
 
 
 class Membro(db.Entity):
@@ -34,6 +70,7 @@ class Membro(db.Entity):
     estado = Required(Estado)
     telegram = Required(int)
     username = Optional(str)
+    cidade = Optional(Municipio)
 
 
 class Evento(db.Entity):
@@ -130,7 +167,7 @@ def lista():
         print(estado.id, estado.sigla, estado.nome)
     print("Membros")
     for membro in Membro.select().order_by(Membro.nome):
-        print("{0:5} {1:50} {2}".format(
+        print("{0:5} {1:50} {2} {3}".format(
             membro.id, membro.nome, membro.estado.nome, membro.telegram))
 
 
@@ -203,16 +240,33 @@ def pega_nome(user):
         return "{0.first_name}".format(user)
 
 
-def pega_nome_com_estado(nome, estado, username):
+def pega_nome_com_estado(nome, estado, username, cidade):
+    mensagem = nome
     if username:
-        nome = "{0} (@{1})".format(nome, username)
-    return "{0}, {1}".format(nome, estado)
+        mensagem += f" (@{username})"
+    if estado:
+        mensagem += f", {estado}"
+    if cidade:
+        mensagem += f", {cidade}"
+    return mensagem
+
+
+def atualiza_cidade(membro, cidade):
+    if cidade is None:
+        db_cidade = None
+    else:
+        cidade = sem_acentos(cidade).strip().lower()
+        db_cidade = Municipio.get(estado=membro.estado, nome_sem_acentos=cidade)
+    membro.cidade = db_cidade
+    return db_cidade
 
 
 @db_session
-def update_user(from_user, estado):
+def update_user(from_user, estado, cidade=None):
     id = from_user.id
     estado = get_estado(estado)
+    if estado is None:
+        return None, None, None
     membro = Membro.select(lambda m: m.telegram == id).first()
     if membro is None:
         Membro(nome=pega_nome(from_user), estado=estado,
@@ -222,6 +276,8 @@ def update_user(from_user, estado):
         membro.estado = estado
         membro.username = from_user.username
         membro.telegram = id
+    atualiza_cidade(membro, cidade)
+    return membro, membro.estado.nome, membro.cidade and membro.cidade.nome
 
 
 @db_session
@@ -229,7 +285,8 @@ def lista_users():
     usuarios = ["Membros por Estado:"]
     for membro in db.Membro.select().order_by(
             lambda m: (m.estado.regiao.nome, m.estado.nome, m.nome)):
-        usuarios.append(pega_nome_com_estado(membro.nome, membro.estado.nome, membro.username))
+        usuarios.append(pega_nome_com_estado(membro.nome, membro.estado.nome, membro.username,
+                                             membro.cidade and membro.cidade.nome))
     return "\n".join(usuarios)
 
 
@@ -237,22 +294,28 @@ def lista_users():
 def lista_users_por_nome():
     usuarios = ["Membros:"]
     for membro in db.Membro.select().order_by(Membro.nome):
-        usuarios.append(
-            pega_nome_com_estado(membro.nome, membro.estado.nome, membro.username))
+        usuarios.append(pega_nome_com_estado(membro.nome, membro.estado.nome, membro.username,
+                                             membro.cidade and membro.cidade.nome))
     return "\n".join(usuarios)
 
 
 def inicializa(nome="membros.db"):
     db.bind(provider='sqlite', filename=nome, create_db=True)
-    while True:
-        try:
-            db.generate_mapping(create_tables=True)
-            break
-        except OperationalError as oe:
-            """ORM do homem pobre"""
-            menssagem = str(oe)
-            if menssagem == "no such column: estados.nome_sem_acentos":
-                with db_session:
-                    db.execute("alter table estados add nome_sem_acentos")
+    try:
+        db.generate_mapping(create_tables=True)
+    except OperationalError as oe:
+        """ORM do homem pobre. Rodar mais de uma vez para
+           atualizar tabelas."""
+        mensagem = str(oe)
+        print(f"Mensagem: {mensagem}")
+        if mensagem == "no such column: estados.nome_sem_acentos":
+            with db_session:
+                db.execute("alter table estados add nome_sem_acentos")
+        if mensagem == "no such column: membros.cidade":
+            print("Executando MIGRACAO 0002")
+            with db_session:
+                for migracao in MIGRACAO_0002:
+                    db.execute(migracao)
+
     atualiza_regioes()
     atualiza_estados()

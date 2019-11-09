@@ -22,7 +22,7 @@ from mensagens import (
 
 API_TOKEN = os.getenv('API_TOKEN')
 DB_NAME = os.getenv('BOT_DB', "membros.db")
-ADMINS = [int(id) for id in os.getenv('BOT_ADMINS').split(",")] or []
+ADMINS = [int(id) for id in os.getenv('BOT_ADMINS', "").split(",")] or []
 
 assert API_TOKEN is not None
 
@@ -86,9 +86,11 @@ def quebra_mensagem(mensagem):
         yield "\n".join(texto)
 
 
-def bot_responda(mensagem, resposta, parse_mode=None):
+def bot_responda(mensagem, resposta, parse_mode="Markdown"):
     """Telegram não aceita mensagens com mais de 5000 caracteres"""
     chat_id = destino(mensagem)
+    if parse_mode == "Markdown":
+        mensagem = markdown_escape(resposta)
     for r in quebra_mensagem(resposta):
         bot.send_message(chat_id, r, parse_mode=parse_mode)
 
@@ -99,6 +101,13 @@ def nome(mensagem):
     if not nome:
         return mensagem.from_user.username
     return nome
+
+
+def protecao_apenas_privado(mensagem, tipo):
+    if em_grupo(mensagem):
+        bot_responda(mensagem, BOT_PRIVADO)
+        return True
+    return False
 
 
 def protecao_spam_do_grupo(mensagem, tipo):
@@ -124,11 +133,10 @@ def markdown_escape(texto):
 @bot.message_handler(content_types=['new_chat_participant'])
 def send_novo(message):
     """Mensagem enviada para novos integrantes do grupo"""
-    nome_u = markdown_escape(nome(message))
     if not protecao_spam_do_grupo(message, "novo"):
-        bot_responda(message, START.format(nome_u), parse_mode="Markdown")
+        bot_responda(message, START.format(nome))
     else:
-        bot_responda(message, START_REPETIDO.format(nome_u), parse_mode="Markdown")
+        bot_responda(message, START_REPETIDO.format(nome))
 
 
 @bot.message_handler(commands=['start'])
@@ -136,7 +144,7 @@ def send_welcome(message):
     """Mensagem de boas vindas"""
     if protecao_spam_do_grupo(message, "start"):
         return
-    bot_responda(message, START.format(markdown_escape(nome(message))), parse_mode="Markdown")
+    bot_responda(message, START.format(nome(message)))
 
 
 @bot.message_handler(commands=['help', 'ajuda'])
@@ -144,12 +152,12 @@ def send_help(message):
     """Mensagem com ajuda sobre os comandos do bot"""
     if protecao_spam_do_grupo(message, "help"):
         return
-    bot_responda(message, AJUDA, parse_mode="Markdown")
+    bot_responda(message, AJUDA)
 
 
 @bot.message_handler(commands=['link', 'links'])
 def send_link(message):
-    if protecao_spam_do_grupo(message, "links"):
+    if protecao_apenas_privado(message, "links"):
         return
     bot_responda(message, LINKS)
 
@@ -173,30 +181,30 @@ def send_whoami(message):
 @bot.message_handler(commands=['lista'])
 def send_lista(message):
     """Envia a lista de usuarios cadastrados"""
-    if protecao_spam_do_grupo(message, "lista"):
+    if protecao_apenas_privado(message, "lista"):
         return
-    bot_responda(message, db.lista_users())
+    bot_responda(message, db.lista_users(), parse_mode=None)
 
 
 @bot.message_handler(commands=['nomes', 'membros'])
 def send_nomes(message):
     """Envia os nomes do cadastro"""
-    if protecao_spam_do_grupo(message, "membros"):
+    if protecao_apenas_privado(message, "membros"):
         return
-    bot_responda(message, db.lista_users_por_nome())
+    bot_responda(message, db.lista_users_por_nome(), parse_mode=None)
 
 
 @bot.message_handler(commands=['estatistica', 'contador', 'total', 'stat', 'stats'])
 def send_stats(message):
-    """Estatisticas do cadastro por estadp"""
-    if protecao_spam_do_grupo(message, "stats"):
+    """Estatisticas do cadastro por estado"""
+    if protecao_apenas_privado(message, "stats"):
         return
     stats = db.get_stats()
     mensagem = STAT_CAB
     for estado in stats[0]:
         mensagem += STAT_ESTADO.format(estado)
     mensagem += STAT_ROD.format(stats[1])
-    bot_responda(message, mensagem, parse_mode="Markdown")
+    bot_responda(message, mensagem)
 
 
 @bot.message_handler(commands=['eventos'])
@@ -216,23 +224,28 @@ def send_eventos(message):
     else:
         mensagem += "Não há eventos futuros cadastrados."
     mensagem += EVENTOS_ROD
-    bot_responda(message, mensagem, parse_mode="Markdown")
+    bot_responda(message, mensagem)
 
 
 @bot.message_handler(commands=['membro', 'mecadastra', 'novo'])
 def send_membro(message):
-    """Permite ao usuario se cadastrar e informar seu estado"""
-    params = message.text.split()
+    """Permite ao usuario se cadastrar e informar seu estado e cidade"""
+    params = shlex.split(message.text)
     if len(params) < 2:
         bot_responda(message, MEMBRO_AJUDA)
         return
     estado = params[1].strip()
+    print(params)
+    if len(params) > 2:
+        cidade = params[2].strip()
+    else:
+        cidade = None
 
-    db_estado = db.get_estado(estado)
+    membro, db_estado, db_cidade = db.update_user(message.from_user, estado, cidade)
 
-    if db_estado:
-        db.update_user(message.from_user, db_estado.nome)
-        bot_responda(message, MEMBRO_RESULTADO.format(message.from_user, db_estado.nome))
+    if membro:
+        bot_responda(message, MEMBRO_RESULTADO.format(
+            message.from_user, db_estado, db_cidade or "Não informada/encontrada"))
     else:
         bot_responda(message, MEMBRO_ESTADO.format(message.chat, estado))
 
@@ -251,7 +264,7 @@ def verifica_se_admin(message):
 
 
 def eventos_ajuda(message):
-    bot_responda(message, AJUDA_EVENTOS_AJUDA, parse_mode="Markdown")
+    bot_responda(message, AJUDA_EVENTOS_AJUDA)
 
 
 def traduza_hora(evento):

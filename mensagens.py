@@ -64,6 +64,7 @@ Utilize EX para exterior.
 MEMBRO_RESULTADO = """
 User: {0.username} Name: {0.first_name} {0.last_name}
 Estado: {1}
+Cidade: {2}
 """
 
 MEMBRO_ESTADO = """
@@ -73,14 +74,17 @@ Estado inválido: {1}
 
 MEMBRO_AJUDA = """
 *Uso*:
-```/membro estado```
-
-Você precisa escrever /membro E_A_SIGLA_DO_SEU_ESTADO na mesma linha.
+```/membro estado cidade```
+Você precisa escrever:
+```/membro estado cidade```
+Lembrando que é o estado onde você participa na comunidade e não onde você mora/nasceu.
+Você pode também especificar a cidade. Use aspas para separar nomes com espaços em branco.
 
 Exemplo:
 ```/membro amazonas
 /membro am
-/membro para```
+/membro para
+/membro am manaus```
 """
 
 STAT_CAB = """
